@@ -1,5 +1,15 @@
 ******************************************************************
 ******************************************************************
+Coursera Course Getting and Cleaning Data 
+
+
+- title:"tidydat_README"
+- author: "Shawnzoom"
+- date: "October, 2015"
+
+The document forms part of teh accampnying code books for work performed by Shawnzoom for the Coursera course 
+Getting and Cleaning Data to produce a tidy dataset with an R script called run_analysis.R.
+
 This code book is based on the following work:
 
 
@@ -29,7 +39,8 @@ Operations:
 4. Appropriately labels the data set with descriptive variable names. 
 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
-This code book only describes the data in the tidy dataset. For full details of the orignal dataset please download the dataset and refer to its accompanying code books
+This code book only describes the data in the tidy dataset. For full details of the orignal dataset please download the dataset and refer to 
+its accompanying code books
 ******************************************************************
 ******************************************************************
 
