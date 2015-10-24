@@ -1,14 +1,16 @@
 # cleaningdataproject
-Coursera getting and cleaning data 
+Coursera Course Getting and Cleaning Data 
 
----
-title: "run_analysis"
-author: "Shawnzoom"
-date: "October 17, 2015"
-output: html_document
----
 
-The purpose of this task is to create one R script called run_analysis.R that does the following tasks:
+- title:"run_analysis"
+- author: "Shawnzoom"
+- date: "October, 2015"
+
+The document outlines work performed by Shawnzoom for the Coursera course Getting and Cleaning Data to produce a tidy dataset
+with an R script called run_analysis.R. Where practical, this document includes snippets of the output from R Console to help
+the readed better track the development of the script.
+
+The purpose of this work is to create one R script called run_analysis.R that does the following tasks:
 
 1. Merges the training and the test sets to create one data set.
 2. Extracts only the measurements on the mean and standard deviation for each measurement. 
@@ -776,7 +778,7 @@ write.table(subject_cleaningdata, file = "./cleaningdata/subject_cleaningdata.tx
 
 ```
  
-### From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject. ###
+### 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject. ###
 
 
 ```{r eval=FALSE}
