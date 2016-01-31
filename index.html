@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Cleaningdataproject by Shawnzoom</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Cleaningdataproject</h1>
+          <h2>Coursera getting and cleaning data</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/Shawnzoom/cleaningdataproject/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/Shawnzoom/cleaningdataproject/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/Shawnzoom/cleaningdataproject" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a id="cleaningdataproject" class="anchor" href="#cleaningdataproject" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>cleaningdataproject</h1>
+
+<p>Coursera Course Getting and Cleaning Data </p>
+
+<ul>
+<li>title:"run_analysis"</li>
+<li>author: "Shawnzoom"</li>
+<li>date: "October, 2015"</li>
+</ul>
+
+<p>The document outlines work performed by Shawnzoom for the Coursera course Getting and Cleaning Data to produce a tidy dataset
+with an R script called run_analysis.R. Where practical, this document includes snippets of the output from R Console to help
+the readed better track the development of the script.</p>
+
+<p>The purpose of this work is to create one R script called run_analysis.R that does the following tasks:</p>
+
+<ol>
+<li>Merges the training and the test sets to create one data set.</li>
+<li>Extracts only the measurements on the mean and standard deviation for each measurement. </li>
+<li>Uses descriptive activity names to name the activities in the data set</li>
+<li>Appropriately labels the data set with descriptive variable names. </li>
+<li>From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.</li>
+</ol>
+
+<p>on the following dataset:</p>
+
+<p><a href="https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip">https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip</a></p>
+
+<p>The dataset has been downloaded and expanded into the following directory e:/rcode/GettingDataProject</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># load libraries</span>
+library(<span class="pl-smi">stringr</span>)
+library(<span class="pl-smi">plyr</span>)
+library(<span class="pl-smi">reshape2</span>)
+
+</pre></div>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Set the working dir to the location with the expanded dataset</span>
+setwd(<span class="pl-s"><span class="pl-pds">"</span>e:/rcode/GettingDataProject/UCI HAR Dataset<span class="pl-pds">"</span></span>)
+<span class="pl-smi">project_dir</span> <span class="pl-k">&lt;-</span> getwd()
+<span class="pl-smi">project_dir</span>
+</pre></div>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># list directory structure of the dataset</span>
+list.dirs()
+</pre></div>
+
+<pre><code>[1] "."                        "./test"                   "./test/Inertial Signals" 
+[4] "./train"                  "./train/Inertial Signals"
+
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># list files in  "./test"  dir</span>
+
+<span class="pl-smi">test_files1</span> <span class="pl-k">&lt;-</span> list.files(<span class="pl-s"><span class="pl-pds">"</span>./test<span class="pl-pds">"</span></span>)
+<span class="pl-smi">test_files1</span>
+</pre></div>
+
+<pre><code>[1] "Inertial Signals" "subject_test.txt" "X_test.txt"       "y_test.txt" 
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># list files in  "./test/Inertial Signals" dir</span>
+<span class="pl-smi">test_files2</span> <span class="pl-k">&lt;-</span> list.files(<span class="pl-s"><span class="pl-pds">"</span>./test/Inertial Signals<span class="pl-pds">"</span></span>)
+<span class="pl-smi">test_files2</span></pre></div>
+
+<pre><code>[1] "body_acc_x_test.txt"  "body_acc_y_test.txt"  "body_acc_z_test.txt"  "body_gyro_x_test.txt"
+[5] "body_gyro_y_test.txt" "body_gyro_z_test.txt" "total_acc_x_test.txt" "total_acc_y_test.txt"
+[9] "total_acc_z_test.txt"
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># list files in  "./train"  dir</span>
+<span class="pl-smi">train_files1</span> <span class="pl-k">&lt;-</span> list.files(<span class="pl-s"><span class="pl-pds">"</span>./train<span class="pl-pds">"</span></span>)
+<span class="pl-smi">train_files1</span></pre></div>
+
+<pre><code>[1] "Inertial Signals"  "subject_train.txt" "X_train.txt"       "y_train.txt"    
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># list files in  "./train/Inertial Signals" dir</span>
+<span class="pl-smi">train_files2</span> <span class="pl-k">&lt;-</span> list.files(<span class="pl-s"><span class="pl-pds">"</span>./train/Inertial Signals<span class="pl-pds">"</span></span>)
+<span class="pl-smi">train_files2</span>
+</pre></div>
+
+<pre><code>[1] "body_acc_x_train.txt"  "body_acc_y_train.txt"  "body_acc_z_train.txt"  "body_gyro_x_train.txt"
+[5] "body_gyro_y_train.txt" "body_gyro_z_train.txt" "total_acc_x_train.txt" "total_acc_y_train.txt"
+[9] "total_acc_z_train.txt"
+</code></pre>
+
+<h3>
+<a id="1-merges-the-training-and-the-test-sets-to-create-one-combined-dataset" class="anchor" href="#1-merges-the-training-and-the-test-sets-to-create-one-combined-dataset" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1. Merges the training and the test sets to create one combined dataset.</h3>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># create the 'top-level' combined directory</span>
+<span class="pl-k">if</span> (<span class="pl-k">!</span>file.exists(<span class="pl-s"><span class="pl-pds">"</span>./combined<span class="pl-pds">"</span></span>)) {
+  dir.create(<span class="pl-s"><span class="pl-pds">"</span>./combined<span class="pl-pds">"</span></span>)
+}
+list.dirs()
+</pre></div>
+
+<pre><code>
+</code></pre>
+
+<p>[1] "."                        "./combined"               "./test"<br>
+[4] "./test/Inertial Signals"  "./train"                  "./train/Inertial Signals"</p>
+
+<pre><code>
+```{r eval= FALSE}
+# create the 'Inertial Signals' direcoty for the  combined directory
+if (!file.exists("./combined/Inertial Signals")) {
+  dir.create("./combined/Inertial Signals")
+}
+list.dirs()
+</code></pre>
+
+<pre><code>[1] "."                           "./combined"                  "./combined/Inertial Signals"
+[4] "./test"                      "./test/Inertial Signals"     "./train"                    
+[7] "./train/Inertial Signals" 
+
+</code></pre>
+
+<p>The follwing algorithm will be used to create a combined dataset:</p>
+
+<ol>
+<li>copy the files from the train dataset to the respective combined directories</li>
+<li>append to these files, the files from the test dataset</li>
+<li>rename the files in the combined dir. That is, replace 'train' in all the file names with 'combined'</li>
+</ol>
+
+<p><strong>Copy files</strong></p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># copy the files from the train dataset the respective combined directory</span>
+
+<span class="pl-smi">tmp_workdir</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>, <span class="pl-s"><span class="pl-pds">"</span>/train<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> ) 
+
+<span class="pl-c"># set temporary working dir</span>
+setwd(<span class="pl-smi">tmp_workdir</span>) 
+
+file.copy(<span class="pl-smi">train_files1</span>,<span class="pl-s"><span class="pl-pds">"</span>../combined<span class="pl-pds">"</span></span>, <span class="pl-v">overwrite</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">recursive</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span> )
+
+<span class="pl-c"># reset project working dir</span>
+setwd(<span class="pl-smi">project_dir</span>) 
+
+<span class="pl-smi">combined_files1</span> <span class="pl-k">&lt;-</span> list.files(<span class="pl-s"><span class="pl-pds">"</span>./combined<span class="pl-pds">"</span></span>)
+<span class="pl-smi">combined_files1</span>
+</pre></div>
+
+<pre><code>[1] "Inertial Signals"  "subject_train.txt" "X_train.txt"       "y_train.txt"  
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># copy the files from the train/Inertial Signals dataset the respective combined directory</span>
+
+<span class="pl-smi">tmp_workdir</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>, <span class="pl-s"><span class="pl-pds">"</span>/train/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> ) 
+
+<span class="pl-c"># set temporary working dir</span>
+setwd(<span class="pl-smi">tmp_workdir</span>)
+
+file.copy(<span class="pl-smi">train_files2</span>,<span class="pl-s"><span class="pl-pds">"</span>../../combined/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-v">overwrite</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">recursive</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span> )
+
+<span class="pl-c"># reset project working dir</span>
+setwd(<span class="pl-smi">project_dir</span>)
+
+<span class="pl-smi">combined_files2</span> <span class="pl-k">&lt;-</span> list.files(<span class="pl-s"><span class="pl-pds">"</span>./combined/Inertial Signals<span class="pl-pds">"</span></span>)
+<span class="pl-smi">combined_files2</span>
+</pre></div>
+
+<pre><code>[1] "body_acc_x_train.txt"  "body_acc_y_train.txt"  "body_acc_z_train.txt" 
+[4] "body_gyro_x_train.txt" "body_gyro_y_train.txt" "body_gyro_z_train.txt"
+[7] "total_acc_x_train.txt" "total_acc_y_train.txt" "total_acc_z_train.txt"
+</code></pre>
+
+<p><strong>Append files /UCI HAR Dataset/combined</strong></p>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-smi">tmp_workdir</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>, <span class="pl-s"><span class="pl-pds">"</span>/combined<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> ) 
+
+<span class="pl-c"># set temporary working dir</span>
+setwd(<span class="pl-smi">tmp_workdir</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>subject_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> )
+file.append(<span class="pl-s"><span class="pl-pds">"</span>subject_train.txt<span class="pl-pds">"</span></span>, <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>X_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> )
+file.append(<span class="pl-s"><span class="pl-pds">"</span>X_train.txt<span class="pl-pds">"</span></span>, <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>y_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> )
+file.append(<span class="pl-s"><span class="pl-pds">"</span>y_train.txt<span class="pl-pds">"</span></span>, <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-c"># reset project working dir</span>
+setwd(<span class="pl-smi">project_dir</span>)
+</pre></div>
+
+<p><strong>Append files /UCI HAR Dataset/combined/Inertial Signals</strong></p>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-smi">tmp_workdir</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>, <span class="pl-s"><span class="pl-pds">"</span>/combined/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> ) 
+
+<span class="pl-c"># set temporary working dir</span>
+setwd(<span class="pl-smi">tmp_workdir</span>)
+
+
+<span class="pl-c">#</span>
+<span class="pl-c"># body_acc files</span>
+<span class="pl-c">#</span>
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>body_acc_x_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>body_acc_x_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>body_acc_y_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>body_acc_y_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>body_acc_z_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>body_acc_z_train.txt<span class="pl-pds">"</span></span>  , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-c">#</span>
+<span class="pl-c"># body_gyro files</span>
+<span class="pl-c">#</span>
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>body_gyro_x_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>body_gyro_x_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>body_gyro_y_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>body_gyro_y_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>body_gyro_z_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>body_gyro_z_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-c">#</span>
+<span class="pl-c"># total_acc files</span>
+<span class="pl-c">#</span>
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>total_acc_x_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>total_acc_x_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>total_acc_y_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>total_acc_y_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-smi">file_to_append</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>,<span class="pl-s"><span class="pl-pds">"</span>/test/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>total_acc_z_test.txt<span class="pl-pds">"</span></span> ,<span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+file.append(<span class="pl-s"><span class="pl-pds">"</span>total_acc_z_train.txt<span class="pl-pds">"</span></span> , <span class="pl-smi">file_to_append</span>)
+
+<span class="pl-c"># reset project working dir</span>
+setwd(<span class="pl-smi">project_dir</span>)
+</pre></div>
+
+<p><strong>Rename files /UCI HAR Dataset/combined</strong></p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-smi">tmp_workdir</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>, <span class="pl-s"><span class="pl-pds">"</span>/combined<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> ) 
+
+<span class="pl-c"># set temporary working dir</span>
+setwd(<span class="pl-smi">tmp_workdir</span>)
+
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>subject_train.txt<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>subject_combined.txt<span class="pl-pds">"</span></span> )
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>X_train.txt<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>X_combined.txt<span class="pl-pds">"</span></span>)
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>y_train.txt<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>y_combined.txt<span class="pl-pds">"</span></span>)
+
+list.files()
+
+<span class="pl-c"># reset project working dir</span>
+setwd(<span class="pl-smi">project_dir</span>)
+</pre></div>
+
+<p><strong>Rename files /UCI HAR Dataset/combined/Inertial Signals</strong></p>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-smi">tmp_workdir</span> <span class="pl-k">&lt;-</span> paste(<span class="pl-smi">project_dir</span>, <span class="pl-s"><span class="pl-pds">"</span>/combined/Inertial Signals<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> ) 
+
+<span class="pl-c"># set temporary working dir</span>
+setwd(<span class="pl-smi">tmp_workdir</span>)
+
+
+<span class="pl-c">#</span>
+<span class="pl-c"># body_acc files</span>
+<span class="pl-c">#</span>
+
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>body_acc_x_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>body_acc_x_combined.txt<span class="pl-pds">"</span></span>)
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>body_acc_y_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>body_acc_y_combined.txt<span class="pl-pds">"</span></span>)
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>body_acc_z_train.txt<span class="pl-pds">"</span></span>  , <span class="pl-s"><span class="pl-pds">"</span>body_acc_z_combined.txt<span class="pl-pds">"</span></span>)
+
+<span class="pl-c">#</span>
+<span class="pl-c"># body_gyro files</span>
+<span class="pl-c">#</span>
+
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>body_gyro_x_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>body_gyro_x_combined.txt<span class="pl-pds">"</span></span>)
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>body_gyro_y_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>body_gyro_y_combined.txt<span class="pl-pds">"</span></span>)
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>body_gyro_z_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>body_gyro_z_combined.txt<span class="pl-pds">"</span></span>)
+
+<span class="pl-c">#</span>
+<span class="pl-c"># total_acc files</span>
+<span class="pl-c">#</span>
+
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>total_acc_x_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>total_acc_x_combined.txt<span class="pl-pds">"</span></span>)
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>total_acc_y_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>total_acc_y_combined.txt<span class="pl-pds">"</span></span>)
+file.rename(<span class="pl-s"><span class="pl-pds">"</span>total_acc_z_train.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>total_acc_z_combined.txt<span class="pl-pds">"</span></span>)
+
+<span class="pl-c"># reset project working dir</span>
+setwd(<span class="pl-smi">project_dir</span>)
+</pre></div>
+
+<pre><code>&gt; list.files("./combined")
+[1] "Inertial Signals"     "subject_combined.txt" "X_combined.txt"      
+[4] "y_combined.txt" 
+
+&gt; list.files("./combined/Inertial Signals")
+[1] "body_acc_x_combined.txt"  "body_acc_y_combined.txt"  "body_acc_z_combined.txt" 
+[4] "body_gyro_x_combined.txt" "body_gyro_y_combined.txt" "body_gyro_z_combined.txt"
+[7] "total_acc_x_combined.txt" "total_acc_y_combined.txt" "total_acc_z_combined.txt"
+</code></pre>
+
+<h3>
+<a id="2-extracts-only-the-measurements-on-the-mean-and-standard-deviation-for-each-measurement" class="anchor" href="#2-extracts-only-the-measurements-on-the-mean-and-standard-deviation-for-each-measurement" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2. Extracts only the measurements on the mean and standard deviation for each measurement.</h3>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-c"># Set the working dir to the location with the expanded dataset</span>
+
+<span class="pl-c">#list files in project_dir</span>
+list.files(<span class="pl-smi">project_dir</span>)
+</pre></div>
+
+<pre><code># Before any processing, the dataset directory looks like...
+
+[1] "activity_labels.txt" "combined"            "features.txt"        "features_info.txt"  
+[5] "README.txt"          "test"                "train" 
+</code></pre>
+
+<pre><code>From the README.txt
+The set of variables that were estimated from these signals are: 
+
+mean(): Mean value
+std(): Standard deviation
+</code></pre>
+
+<p>By examining Readme.txt, features_info.txt and features.txt, all the measurements on the mean and standard deviation have mean() or std(), in their feature titles, respectively. Additionally, the features.txt file contains an index for the feature. For this execise, the additional vectors with <strong>mean</strong> in their titles will be ignored.</p>
+
+<pre><code>For example, the first 8 rows of features.txt have the following values. Rows 1-3, contain mean measurements and rows 4-6, contain standard deviation measurements. So, by reading the features.txt file it is possible to get the indexes for all the measurements on mean and standard deviation.
+
+1 tBodyAcc-mean()-X
+2 tBodyAcc-mean()-Y
+3 tBodyAcc-mean()-Z
+4 tBodyAcc-std()-X
+5 tBodyAcc-std()-Y
+6 tBodyAcc-std()-Z
+7 tBodyAcc-mad()-X
+8 tBodyAcc-mad()-Y
+
+And... as an example, the following will be ignored
+294 fBodyAcc-meanFreq()-X
+295 fBodyAcc-meanFreq()-Y
+296 fBodyAcc-meanFreq()-Z
+</code></pre>
+
+<p>The following will be the algorithm used to extract only the measurements on the mean and standard deviation for each measurement.</p>
+
+<pre><code>1. Create a file called features_mean_std.txt that is a subset of features.txt and only contains the features for the measuresments described above.
+2. Create an index file called index_mean_std.txt 
+3. Use index file to create subset of the combined dataset
+
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c">#read the features file into a data frame called features</span>
+<span class="pl-smi">features</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>features.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span>)
+
+<span class="pl-c">#subset the features data frame                 </span>
+<span class="pl-smi">features_mean_std</span> <span class="pl-k">&lt;-</span> subset(<span class="pl-smi">features</span>, grepl(<span class="pl-s"><span class="pl-pds">"</span>std()<span class="pl-pds">"</span></span>, <span class="pl-smi">V2</span>, <span class="pl-v">fixed</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>) <span class="pl-k">|</span> grepl(<span class="pl-s"><span class="pl-pds">"</span>mean()<span class="pl-pds">"</span></span>, <span class="pl-smi">V2</span>, <span class="pl-v">fixed</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>) )
+nrow(<span class="pl-smi">features_mean_std</span>)</pre></div>
+
+<pre><code>[1] 66
+This is the expected result after verifaction using search, in a simple text editor
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c">#Create features-mean_std.txt by writing the features_mean_std data frame to a file</span>
+write.table(<span class="pl-smi">features_mean_std</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>features_mean_std.txt<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">col.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+list.files()
+</pre></div>
+
+<pre><code>[1] "activity_labels.txt"   "combined"              "features.txt"         
+[4] "features_info.txt"     "features_mean_std.txt" "README.txt"           
+[7] "test"                  "train"
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># create the index file index_mean_std.txt by subsetting features_mean_std</span>
+<span class="pl-smi">index_mean_std</span> <span class="pl-k">&lt;-</span> subset(<span class="pl-smi">features_mean_std</span>, <span class="pl-smi">V1</span> <span class="pl-k">==</span> <span class="pl-smi">V1</span>, <span class="pl-v">select</span> <span class="pl-k">=</span> c(<span class="pl-smi">V1</span>))
+write.table(<span class="pl-smi">index_mean_std</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>index_mean_std.txt<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">col.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+list.files()</pre></div>
+
+<pre><code># The dataset directory now looks like...
+
+[1] "activity_labels.txt"   "combined"              "features.txt"         
+[4] "features_info.txt"     "features_mean_std.txt" "index_mean_std.txt"   
+[7] "README.txt"            "test"                  "train"   
+</code></pre>
+
+<p>Make a directory called cleaningdata, to store the data that will subsetted from the combined data</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># create a 'cleaingdata' directory </span>
+<span class="pl-k">if</span> (<span class="pl-k">!</span>file.exists(<span class="pl-s"><span class="pl-pds">"</span>cleaningdata<span class="pl-pds">"</span></span>)) {
+  dir.create(<span class="pl-s"><span class="pl-pds">"</span>cleaningdata<span class="pl-pds">"</span></span>)
+}
+list.dirs()</pre></div>
+
+<pre><code>[1] "."                           "./cleaningdata"              "./combined"                 
+[4] "./combined/Inertial Signals" "./test"                      "./test/Inertial Signals"    
+[7] "./train"                     "./train/Inertial Signals" 
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># read the combined dataset into a data frame</span>
+<span class="pl-smi">X_combined</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>./combined/X_combined.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+ncol(<span class="pl-smi">X_combined</span>)
+nrow(<span class="pl-smi">X_combined</span>)</pre></div>
+
+<p>As expected this gives the following results</p>
+
+<pre><code>&gt; ncol(X_combined)
+[1] 561
+&gt; nrow(X_combined)
+[1] 10299
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-c"># use index_mean_std to subset the combined dataset</span>
+<span class="pl-c"># first, transpose index_mean_std. This is so it can be used as vector for subsettung operations</span>
+<span class="pl-smi">t_index_mean_std</span> <span class="pl-k">&lt;-</span> t(<span class="pl-smi">index_mean_std</span>)
+
+<span class="pl-c"># create subset data frame</span>
+<span class="pl-smi">X_cleaningdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">X_combined</span>[,<span class="pl-smi">t_index_mean_std</span>]
+
+<span class="pl-c">#check numbers of rows and cols</span>
+ncol(<span class="pl-smi">X_cleaningdata</span>)
+nrow(<span class="pl-smi">X_cleaningdata</span>)
+</pre></div>
+
+<p>As expected this gives the following results</p>
+
+<pre><code>&gt; ncol(X_cleaningdata)
+[1] 66
+&gt; nrow(X_cleaningdata)
+[1] 10299
+</code></pre>
+
+<p>Save the subset data frame to the cleaningdata directory</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># create file cleaningdata.txt in the cleaningdata directory</span>
+write.table(<span class="pl-smi">X_cleaningdata</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/X_cleaningdata.txt<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">col.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">append</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+list.files(<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata<span class="pl-pds">"</span></span>)
+</pre></div>
+
+<p>As expected</p>
+
+<pre><code>&gt; list.files(./cleaningdata")
+[1] "X_cleaningdata.txt"
+</code></pre>
+
+<p><strong>"X_cleaningdata.txt" contains the subset ofthe combined dataset as requested.</strong></p>
+
+<h3>
+<a id="3-uses-descriptive-activity-names-to-name-the-activities-in-the-data-set" class="anchor" href="#3-uses-descriptive-activity-names-to-name-the-activities-in-the-data-set" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3. Uses descriptive activity names to name the activities in the data set</h3>
+
+<pre><code>From the README.txt it states "Each person performed six activities (WALKING, WALKING\_UPSTAIRS, WALKING\_DOWNSTAIRS, SITTING, STANDING, LAYING)". These activties are coded in the file y_combined.txt , in the combined dataset, as follows. That is, the numbers 1-6 are used in place of the descriptive names of the activity. The coding is located in the file "./UCI HAR Dataset/activity_labels"
+</code></pre>
+
+<pre><code>1 WALKING
+2 WALKING_UPSTAIRS
+3 WALKING_DOWNSTAIRS
+4 SITTING
+5 STANDING
+6 LAYING
+</code></pre>
+
+<p>The steps that follow are to create a file called y_cleaningdata.txt that has descriptive activity names, and saves it in the cleaningdata directory</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># read the original that codes activity labels into a data frame</span>
+<span class="pl-smi">activity_labels</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>activity_labels.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+ncol(<span class="pl-smi">activity_labels</span>)
+nrow(<span class="pl-smi">activity_labels</span>)
+</pre></div>
+
+<pre><code>&gt; ncol(activity_labels)
+[1] 2
+&gt; nrow(activity_labels)
+[1] 6
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># read the  activities from the combined dataset into a data frame</span>
+<span class="pl-smi">y_combined</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>./combined/y_combined.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+ncol(<span class="pl-smi">y_combined</span>)
+nrow(<span class="pl-smi">y_combined</span>)
+</pre></div>
+
+<pre><code>&gt; ncol(y_combined)
+[1] 1
+&gt; nrow(y_combined)
+[1] 10299
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># make a copy of the data frame of coded activity levels </span>
+
+<span class="pl-smi">y_cleaningdata</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">y_combined</span>
+
+<span class="pl-c">#Recode this data frame using the following function recoderFunc. </span>
+<span class="pl-c">#</span>
+<span class="pl-c"># https://susanejohnston.wordpress.com/2012/10/01/find-and-replace-in-r-part-2-how-to-recode-many-value# s-simultaneously/</span>
+<span class="pl-c"># Credit: Susan Johnston</span>
+<span class="pl-c">#</span>
+
+<span class="pl-en">recoderFunc</span> <span class="pl-k">&lt;-</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>, <span class="pl-smi">oldvalue</span>, <span class="pl-smi">newvalue</span>) {
+
+    <span class="pl-c"># convert any factors to characters</span>
+
+    <span class="pl-k">if</span> (is.factor(<span class="pl-smi">data</span>))     <span class="pl-smi">data</span>     <span class="pl-k">&lt;-</span> as.character(<span class="pl-smi">data</span>)
+    <span class="pl-k">if</span> (is.factor(<span class="pl-smi">oldvalue</span>)) <span class="pl-smi">oldvalue</span> <span class="pl-k">&lt;-</span> as.character(<span class="pl-smi">oldvalue</span>)
+    <span class="pl-k">if</span> (is.factor(<span class="pl-smi">newvalue</span>)) <span class="pl-smi">newvalue</span> <span class="pl-k">&lt;-</span> as.character(<span class="pl-smi">newvalue</span>)
+
+    <span class="pl-c"># create the return vector</span>
+
+    <span class="pl-smi">newvec</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">data</span>
+
+    <span class="pl-c"># put recoded values into the correct position in the return vector</span>
+
+    <span class="pl-k">for</span> (<span class="pl-smi">i</span> <span class="pl-k">in</span> unique(<span class="pl-smi">oldvalue</span>)) <span class="pl-smi">newvec</span>[<span class="pl-smi">data</span> <span class="pl-k">==</span> <span class="pl-smi">i</span>] <span class="pl-k">&lt;-</span> <span class="pl-smi">newvalue</span>[<span class="pl-smi">oldvalue</span> <span class="pl-k">==</span> <span class="pl-smi">i</span>]
+
+    <span class="pl-smi">newvec</span>
+
+}
+
+<span class="pl-smi">y_cleaningdata</span> <span class="pl-k">&lt;-</span> recoderFunc(<span class="pl-smi">y_cleaningdata</span>, <span class="pl-smi">activity_labels</span><span class="pl-k">$</span><span class="pl-smi">V1</span>, <span class="pl-smi">activity_labels</span><span class="pl-k">$</span><span class="pl-smi">V2</span>)
+
+head(<span class="pl-smi">y_cleaningdata</span>)</pre></div>
+
+<pre><code>
+        V1
+1 STANDING
+2 STANDING
+3 STANDING
+4 STANDING
+5 STANDING
+6 STANDING
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Add a colname called 'testActivity'</span>
+colnames(<span class="pl-smi">y_cleaningdata</span>) <span class="pl-k">&lt;-</span> c(<span class="pl-s"><span class="pl-pds">'</span>testActivity<span class="pl-pds">'</span></span>)
+head(<span class="pl-smi">y_cleaningdata</span>)
+</pre></div>
+
+<pre><code>&gt; head(y_cleaningdata)
+  testActivity
+1     STANDING
+2     STANDING
+3     STANDING
+4     STANDING
+5     STANDING
+6     STANDING
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># write the file y_cleaningdata.txt in the cleaningdata directory</span>
+write.table(<span class="pl-smi">y_cleaningdata</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/y_cleaningdata.txt<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">col.names</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>)
+list.files(<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata<span class="pl-pds">"</span></span>)
+</pre></div>
+
+<h3>
+<a id="4-appropriately-label-the-data-set-with-descriptive-variable-names" class="anchor" href="#4-appropriately-label-the-data-set-with-descriptive-variable-names" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4. Appropriately label the data set with descriptive variable names.</h3>
+
+<p><strong>Part 1: Handling X_cleaningdata.txt</strong></p>
+
+<p>The subset dataset X_cleaningdata.txt currently has no variable names associated with the columns. The variable names that should be added to this dataset are contained in the file <strong>features_mean_std.txt</strong> (only contains the variable names with <strong>mean()</strong> or <strong>std()</strong> in the name ) which is derived the <strong>features.txt</strong> in the combined dataset.</p>
+
+<p>The steps complete this task are as follows</p>
+
+<ol>
+<li>Copy features_mean_std.txt from the combined directory to the cleaning data directory</li>
+<li>Read the file into a data frame and drop the first column</li>
+<li>Transpose the data frame to a vector</li>
+<li>Read the file X_cleaningdata.txt into a data</li>
+<li>Add the vector from step 4 as the first row X_cleaningdata data frame</li>
+<li>Write the X_cleaningdata data frame to a file</li>
+</ol>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Copy features_mean_std.txt from the combined directory to the cleaning data directory</span>
+file.copy(<span class="pl-s"><span class="pl-pds">"</span>features_mean_std.txt<span class="pl-pds">"</span></span>    ,<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/features_mean_std.txt<span class="pl-pds">"</span></span>, <span class="pl-v">overwrite</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">recursive</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span> )
+list.files(<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata<span class="pl-pds">"</span></span>)
+</pre></div>
+
+<pre><code>[1] "features_mean_std.txt" "X_cleaningdata.txt"    "y_cleaningdata.txt"   
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Read the file into a data frame and drop the first column</span>
+<span class="pl-smi">features_mean_std.df</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/features_mean_std.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>)
+
+ncol(<span class="pl-smi">features_mean_std.df</span>)
+nrow(<span class="pl-smi">features_mean_std.df</span>)
+
+<span class="pl-c">#Result:</span>
+<span class="pl-c">#</span>
+<span class="pl-c">#&gt; ncol(features_mean_std.df)</span>
+<span class="pl-c">#[1] 2</span>
+<span class="pl-c">#&gt; nrow(features_mean_std.df)</span>
+<span class="pl-c">#[1] 66</span>
+
+<span class="pl-c"># drop the first column</span>
+<span class="pl-smi">dropped.feature_mean_std</span> <span class="pl-k">&lt;-</span> subset(<span class="pl-smi">features_mean_std.df</span>, <span class="pl-v">select</span><span class="pl-k">=</span><span class="pl-k">-</span>c(<span class="pl-smi">V1</span>))
+
+<span class="pl-c"># Transpose the data frame to a vector</span>
+<span class="pl-smi">t_features_mean_std.df</span> <span class="pl-k">&lt;-</span> as.vector(t(<span class="pl-smi">dropped.feature_mean_std</span>))
+
+<span class="pl-c"># remove special punctuation characters</span>
+<span class="pl-smi">t_features_mean_std.df</span> <span class="pl-k">&lt;-</span>str_replace_all(<span class="pl-smi">t_features_mean_std.df</span>, <span class="pl-s"><span class="pl-pds">"</span>[[:punct:]]<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+
+str(<span class="pl-smi">t_features_mean_std.df</span>)</pre></div>
+
+<pre><code>&gt; str(t_features_mean_std.df)
+ chr [1:66] "tBodyAccmeanX" "tBodyAccmeanY" "tBodyAccmeanZ" "tBodyAccstdX" ...
+
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Read the file X_cleaningdata.txt into a data</span>
+<span class="pl-smi">X_cleaningdata</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/X_cleaningdata.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>)
+ncol(<span class="pl-smi">X_cleaningdata</span>)</pre></div>
+
+<pre><code>The number of columns in X_cleaningdata matches the number of columns in t_features_mean_std.df
+&gt; ncol(X_cleaningdata)
+[1] 66
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Preview teh head of X_cleaningdata</span>
+head(<span class="pl-smi">X_cleaningdata</span>)
+</pre></div>
+
+<pre><code>A snippet
+&gt; head(X_cleaningdata)
+         V1          V2         V3         V4         V5         V6        V7
+1 0.2885845 -0.02029417 -0.1329051 -0.9952786 -0.9831106 -0.9135264 0.9633961
+2 0.2784188 -0.01641057 -0.1235202 -0.9982453 -0.9753002 -0.9603220 0.9665611
+3 0.2796531 -0.01946716 -0.1134617 -0.9953796 -0.9671870 -0.9789440 0.9668781
+4 0.2791739 -0.02620065 -0.1232826 -0.9960915 -0.9834027 -0.9906751 0.9676152
+5 0.2766288 -0.01656965 -0.1153619 -0.9981386 -0.9808173 -0.9904816 0.9682244
+6 0.2771988 -0.01009785 -0.1051373 -0.9973350 -0.9904868 -0.9954200 0.9679482
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Add the vector from step 4 as the first row X_cleaningdata data frame</span>
+colnames(<span class="pl-smi">X_cleaningdata</span>) <span class="pl-k">&lt;-</span> <span class="pl-smi">t_features_mean_std.df</span>
+
+<span class="pl-c"># preview head of cleaning data</span>
+head(<span class="pl-smi">X_cleaningdata</span>)</pre></div>
+
+<pre><code>Here is a snippet of the head()
+&gt; head(X_cleaningdata)
+
+  tBodyAccmeanX tBodyAccmeanY tBodyAccmeanZ tBodyAccstdX tBodyAccstdY tBodyAccstdZ
+1     0.2885845   -0.02029417    -0.1329051   -0.9952786   -0.9831106   -0.9135264
+2     0.2784188   -0.01641057    -0.1235202   -0.9982453   -0.9753002   -0.9603220
+3     0.2796531   -0.01946716    -0.1134617   -0.9953796   -0.9671870   -0.9789440
+4     0.2791739   -0.02620065    -0.1232826   -0.9960915   -0.9834027   -0.9906751
+5     0.2766288   -0.01656965    -0.1153619   -0.9981386   -0.9808173   -0.9904816
+6     0.2771988   -0.01009785    -0.1051373   -0.9973350   -0.9904868   -0.9954200
+</code></pre>
+
+<p>Save the subset data frame to the cleaningdata directory</p>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-c"># Write the X_cleaningdata data frame to a file, Overwrite existing file and write column names</span>
+
+write.table(<span class="pl-smi">X_cleaningdata</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/X_cleaningdata.txt<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">col.names</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>, <span class="pl-v">append</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+</pre></div>
+
+<p><strong>Part 2: Creating subject_cleaningdata.txt from subject_combined.txt</strong></p>
+
+<p>Steps</p>
+
+<ol>
+<li>Copy file from combined directory to cleaningdata directory</li>
+<li>Read file into data frame</li>
+<li>Add a colname called 'testSubject'</li>
+<li>Write the file back out again</li>
+</ol>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-c"># Copy subject_combined.txt from the combined directory to the cleaning data directory</span>
+
+file.copy(<span class="pl-s"><span class="pl-pds">"</span>./combined/subject_combined.txt<span class="pl-pds">"</span></span> , <span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/subject_cleaningdata.txt<span class="pl-pds">"</span></span>, <span class="pl-v">overwrite</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">recursive</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span> )
+
+list.files(<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata<span class="pl-pds">"</span></span>)</pre></div>
+
+<pre><code>&gt; list.files("./cleaningdata")
+[1] "features_mean_std.txt"    "subject_cleaningdata.txt" "X_cleaningdata.txt"      
+[4] "y_cleaningdata.txt"
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Read the file subject_cleaningdata.txt into a data</span>
+<span class="pl-smi">subject_cleaningdata</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/subject_cleaningdata.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>)
+
+<span class="pl-c"># Add a colname called 'testSubject'</span>
+colnames(<span class="pl-smi">subject_cleaningdata</span>) <span class="pl-k">&lt;-</span> c(<span class="pl-s"><span class="pl-pds">'</span>testSubject<span class="pl-pds">'</span></span>)
+
+head(<span class="pl-smi">subject_cleaningdata</span>)</pre></div>
+
+<pre><code>&gt; head(subject_cleaningdata)
+  testSubject
+1           1
+2           1
+3           1
+4           1
+5           1
+6           1
+</code></pre>
+
+<p>Save the subset data frame to the cleaningdata directory</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Write the subject_cleaningdata data frame to a file, Overwrite existing file and write column names</span>
+write.table(<span class="pl-smi">subject_cleaningdata</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>./cleaningdata/subject_cleaningdata.txt<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">col.names</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>, <span class="pl-v">append</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+</pre></div>
+
+<h3>
+<a id="5-from-the-data-set-in-step-4-creates-a-second-independent-tidy-data-set-with-the-average-of-each-variable-for-each-activity-and-each-subject" class="anchor" href="#5-from-the-data-set-in-step-4-creates-a-second-independent-tidy-data-set-with-the-average-of-each-variable-for-each-activity-and-each-subject" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.</h3>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-c"># Set the working dir to the location with the expanded dataset</span>
+setwd(<span class="pl-smi">project_dir</span>)
+
+<span class="pl-c">#list files in project_dir</span>
+list.dirs(<span class="pl-smi">project_dir</span>)
+</pre></div>
+
+<pre><code>[1] "e:/rcode/GettingDataProject/UCI HAR Dataset"                          
+[2] "e:/rcode/GettingDataProject/UCI HAR Dataset/cleaningdata"             
+[3] "e:/rcode/GettingDataProject/UCI HAR Dataset/combined"                 
+[4] "e:/rcode/GettingDataProject/UCI HAR Dataset/combined/Inertial Signals"
+[5] "e:/rcode/GettingDataProject/UCI HAR Dataset/test"                     
+[6] "e:/rcode/GettingDataProject/UCI HAR Dataset/test/Inertial Signals"    
+[7] "e:/rcode/GettingDataProject/UCI HAR Dataset/train"                    
+[8] "e:/rcode/GettingDataProject/UCI HAR Dataset/train/Inertial Signals"   
+</code></pre>
+
+<p>Make a directory called tidydata, to store the data that will be created from the cleadingdata</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># create a 'cleaingdata' directory </span>
+<span class="pl-k">if</span> (<span class="pl-k">!</span>file.exists(<span class="pl-s"><span class="pl-pds">"</span>tidydata<span class="pl-pds">"</span></span>)) {
+  dir.create(<span class="pl-s"><span class="pl-pds">"</span>tidydata<span class="pl-pds">"</span></span>)
+}
+list.dirs()</pre></div>
+
+<pre><code>&gt; list.dirs()
+[1] "."                           "./cleaningdata"             
+[3] "./combined"                  "./combined/Inertial Signals"
+[5] "./test"                      "./test/Inertial Signals"    
+[7] "./tidydata"                  "./train"                    
+[9] "./train/Inertial Signals" 
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Check the dimensions of the data frames that will be used for this exercise</span>
+
+dim(<span class="pl-smi">y_cleaningdata</span>)
+<span class="pl-c"># [1] 10299     1</span>
+dim(<span class="pl-smi">subject_cleaningdata</span>)
+<span class="pl-c"># [1] 10299     1</span>
+dim(<span class="pl-smi">X_cleaningdata</span>)
+<span class="pl-c">#[1] 10299    66</span></pre></div>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c">#merge data frames by creating an index and then doing a join</span>
+<span class="pl-smi">y_cleaningdata</span> <span class="pl-k">&lt;-</span> cbind(<span class="pl-v">id</span><span class="pl-k">=</span>c(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">10299</span>), <span class="pl-smi">y_cleaningdata</span>)
+
+<span class="pl-smi">X_cleaningdata</span> <span class="pl-k">&lt;-</span> cbind(<span class="pl-v">id</span><span class="pl-k">=</span>c(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">10299</span>), <span class="pl-smi">X_cleaningdata</span>)
+
+<span class="pl-smi">subject_cleaningdata</span> <span class="pl-k">&lt;-</span> cbind(<span class="pl-v">id</span><span class="pl-k">=</span>c(<span class="pl-c1">1</span><span class="pl-k">:</span><span class="pl-c1">10299</span>), <span class="pl-smi">subject_cleaningdata</span>)
+
+<span class="pl-c"># Join data frames</span>
+<span class="pl-smi">dflist</span> <span class="pl-k">&lt;-</span> <span class="pl-k">list</span>(<span class="pl-smi">subject_cleaningdata</span>, <span class="pl-smi">y_cleaningdata</span>, <span class="pl-smi">X_cleaningdata</span>)
+<span class="pl-smi">tidydata</span> <span class="pl-k">&lt;-</span> join_all(<span class="pl-smi">dflist</span>)
+
+<span class="pl-c">#id is no longer needed and it can be dropper</span>
+<span class="pl-smi">tidydata</span> <span class="pl-k">&lt;-</span> subset(<span class="pl-smi">tidydata</span>, <span class="pl-v">select</span><span class="pl-k">=</span><span class="pl-k">-</span>c(<span class="pl-smi">id</span>))
+</pre></div>
+
+<pre><code>There are 30 test subjects and 6 activities and 66 variables per observation. Therefor the final dimesions of the tidydata dataset should be 180 (30 x 6) rows, by 66 columns
+</code></pre>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-c">#Use testSubject and testActivity as the id</span>
+<span class="pl-smi">meltedTidyData</span><span class="pl-k">&lt;-</span> melt(<span class="pl-smi">tidydata</span>, <span class="pl-v">id</span><span class="pl-k">=</span>c(<span class="pl-s"><span class="pl-pds">"</span>testSubject<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>testActivity<span class="pl-pds">"</span></span>), <span class="pl-v">na.rm</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>)
+
+
+dim(<span class="pl-smi">meltedTidyData</span>)
+<span class="pl-c"># [1] 679734      4</span>
+
+
+<span class="pl-smi">tidydata</span> <span class="pl-k">&lt;-</span> acast(<span class="pl-smi">meltedTidyData</span>, <span class="pl-smi">testSubject</span> <span class="pl-k">+</span> <span class="pl-smi">testActivity</span> <span class="pl-k">~</span> <span class="pl-smi">variable</span>, <span class="pl-smi">mean</span>)
+dim(<span class="pl-smi">tidydata</span>)
+<span class="pl-c"># [1] 180  66</span>
+
+head(<span class="pl-smi">tidydata</span>)
+tail(<span class="pl-smi">tidydata</span>)
+
+</pre></div>
+
+<pre><code>Snippet (of head)
+                     tBodyAccmeanX tBodyAccmeanY tBodyAccmeanZ tBodyAccstdX tBodyAccstdY tBodyAccstdZ
+1_LAYING                 0.2215982  -0.040513953    -0.1132036  -0.92805647 -0.836827406  -0.82606140
+1_SITTING                0.2612376  -0.001308288    -0.1045442  -0.97722901 -0.922618642  -0.93958629
+1_STANDING               0.2789176  -0.016137590    -0.1106018  -0.99575990 -0.973190056  -0.97977588
+1_WALKING                0.2773308  -0.017383819    -0.1111481  -0.28374026  0.114461337  -0.26002790
+1_WALKING_DOWNSTAIRS     0.2891883  -0.009918505    -0.1075662   0.03003534 -0.031935943  -0.23043421
+1_WALKING_UPSTAIRS       0.2554617  -0.023953149    -0.0973020  -0.35470803 -0.002320265  -0.01947924
+
+
+Snippet (of tail)
+                     tBodyAccmeanX tBodyAccmeanY tBodyAccmeanZ tBodyAccstdX
+30_LAYING                 0.2810339  -0.019449410   -0.10365815  -0.97636252
+30_SITTING                0.2683361  -0.008047313   -0.09951545  -0.98362274
+30_STANDING               0.2771127  -0.017016389   -0.10875621  -0.97755943
+30_WALKING                0.2764068  -0.017588039   -0.09862471  -0.34639428
+30_WALKING_DOWNSTAIRS     0.2831906  -0.017438390   -0.09997814  -0.05777032
+30_WALKING_UPSTAIRS       0.2714156  -0.025331170   -0.12469749  -0.35050448
+
+</code></pre>
+
+<p>Save the tidydata data frame to the tidydata directory without row names. Note: This required to submit the assignment</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Write the tidy data frame to a file, Overwrite existing file and write column names and not row names</span>
+write.table(<span class="pl-smi">tidydata</span>, <span class="pl-v">file</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>./tidydata/tidydata.txt<span class="pl-pds">"</span></span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>, <span class="pl-v">row.names</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">col.names</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>, <span class="pl-v">append</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>)
+</pre></div>
+
+<p>Read the tidydata.txt back to confirm rows are gone</p>
+
+<div class="highlight highlight-source-r"><pre>
+<span class="pl-c"># </span>
+<span class="pl-smi">tidydata_minus_rownames</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s"><span class="pl-pds">"</span>./tidydata/tidydata.txt<span class="pl-pds">"</span></span>,  <span class="pl-v">header</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>, <span class="pl-v">sep</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>)
+
+head(<span class="pl-smi">tidydata_minus_rownames</span>)
+</pre></div>
+
+<pre><code>
+Snippet of head(tidydata_minus_rownames)
+  tBodyAccmeanX tBodyAccmeanY tBodyAccmeanZ tBodyAccstdX tBodyAccstdY tBodyAccstdZ
+1     0.2215982  -0.040513953    -0.1132036  -0.92805647 -0.836827406  -0.82606140
+2     0.2612376  -0.001308288    -0.1045442  -0.97722901 -0.922618642  -0.93958629
+3     0.2789176  -0.016137590    -0.1106018  -0.99575990 -0.973190056  -0.97977588
+4     0.2773308  -0.017383819    -0.1111481  -0.28374026  0.114461337  -0.26002790
+5     0.2891883  -0.009918505    -0.1075662   0.03003534 -0.031935943  -0.23043421
+6     0.2554617  -0.023953149    -0.0973020  -0.35470803 -0.002320265  -0.01947924
+</code></pre>
+        </section>
+
+        <footer>
+          Cleaningdataproject is maintained by <a href="https://github.com/Shawnzoom">Shawnzoom</a><br>
+          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
